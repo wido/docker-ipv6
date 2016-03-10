@@ -1,0 +1,36 @@
+#!/bin/bash
+#
+# DHCPv6 hook for Docker
+#
+# This hook will configure Docker to use the first /80 IPv6 subnet
+# from the Prefix we got through DHCPv6 Prefix Delegation
+#
+# A /80 subnet is large enough for Docker. 80 + 48 bits (MAC) equals 128-bits.
+#
+# dhclient will run this hook after it obtains the lease
+#
+# Make sure you can dhclient in a way that it requests a prefix, eg:
+#
+# dhclient -6 -P -d eth0
+#
+# With the new prefix we can reconfigure Docker and restart it
+#
+# Make sure /etc/default/docker contains:
+#
+# DOCKER_OPTS="--ipv6 --fixed-cidr-v6=`cat /etc/docker/ipv6.prefix`"
+#
+# This script requires sipcalc to function
+command -v sipcalc >/dev/null 2>&1 || exit 0
+
+SUBNET_SIZE=80
+DOCKER_ETC_DIR="/etc/docker"
+DOCKER_PREFIX_FILE="${DOCKER_ETC_DIR}/ipv6.prefix"
+
+if [ ! -z "$new_ip6_prefix" ]; then
+    SUBNET=$(sipcalc -S $SUBNET_SIZE $new_ip6_prefix|grep Network|head -n 1|awk '{print $3}')
+    echo "${SUBNET}/${SUBNET_SIZE}" > $DOCKER_PREFIX_FILE
+
+    if [ "$old_ip6_prefix" != "$new_ip6_prefix" ]; then
+        service docker restart
+    fi
+fi
