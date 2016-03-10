@@ -66,3 +66,7 @@ IPv6 cidr.
 In order for this to work the *DOCKER_OPTS* in /etc/default/docker should be set to:
 
 ```DOCKER_OPTS="--ipv6 --fixed-cidr-v6=`cat /etc/docker/ipv6.prefix`"```
+
+Afterwards you can print the processlist and see docker running with these arguments:
+
+``/usr/bin/docker daemon --ipv6 --fixed-cidr-v6=2001:00db8:100:0000:0000:0000:0000:0000/80``
