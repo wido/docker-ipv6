@@ -1,0 +1,14 @@
+[Unit]
+Description=DHCPv6 Prefix Delegation client
+Wants=network.target network-online.target
+After=network.target network-online.target
+
+[Service]
+Type=simple
+Environment=NETWORK_INTERFACE=eth0
+ExecStart=/sbin/dhclient -6 -P -d ${NETWORK_INTERFACE}
+Restart=always
+RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target
