@@ -56,7 +56,7 @@ It will request a prefix through DHCPv6.
 
 You can find the DHCPv6 information in */var/lib/dhcp/dhclient6.leases*
 
-## Upstart
+## Ubuntu 14.04: Upstart
 Under Ubuntu 14.04 you can run dhclient using upstart to
 request the prefix and renew then needed.
 
@@ -70,7 +70,7 @@ Afterwards you can start and stop with:
 
 ``sudo stop dhclient6-pd``
 
-## systemd
+## Ubuntu 16.04: systemd
 Ubuntu 16.04 using systemd and to run dhclient for Prefix Delegation to have to install *dhclient6-pd.service* in */etc/systemd/system/*
 
 Now reload systemd and start dhclient:
@@ -85,6 +85,20 @@ Now reload systemd and start dhclient:
 By default it uses eth0 as the configured interface. Change this in the service file if this differs on your system.
 
 With newer kernels this might be *ens3* for example.
+
+### ifupdown / interfaces file
+The ifupdown package on Ubuntu is responsible for configuring network interfaces under Debian and Ubuntu.
+
+I wrote a [patch](https://anonscm.debian.org/cgit/collab-maint/ifupdown.git/commit/?id=9af9a607274bec491ca165f9b8af6af26bbdf585) for ifupdown so that
+you can configure the network stack to perform the Prefix Delegation request for you.
+
+When Ubuntu and Debian apply this patch you can use it in your interfaces file:
+
+<pre>iface eth0 inet6 auto
+  dhcp 1
+  request_prefix 1</pre>
+
+Hopefully this makes it into Ubuntu 16.04.
 
 ## Docker IPv6 hook
 The *docker-ipv6* dhclient hook in this repository should be placed in
