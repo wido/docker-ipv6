@@ -20,17 +20,33 @@
 # DOCKER_OPTS="--ipv6 --fixed-cidr-v6=`cat /etc/docker/ipv6.prefix`"
 #
 # This script requires sipcalc to function
-command -v sipcalc >/dev/null 2>&1 || exit 0
+if ! command -v sipcalc >/dev/null 2>&1
+then
+  exit 1
+fi
 
 SUBNET_SIZE=80
 DOCKER_ETC_DIR="/etc/docker"
 DOCKER_PREFIX_FILE="${DOCKER_ETC_DIR}/ipv6.prefix"
 
-if [ ! -z "$new_ip6_prefix" ]; then
+if [ ! -z "$new_ip6_prefix" ]
+then
+    # new_ip6_prefix is the whole delegated prefix
+    # SUBNET_SIZE is the desired size of the subnet we want to assign.
+    # Now we use sipcalc to slice new_ip6_prefix into SUBNET_SIZE big chunks.
+    # SUBNET contains the address of the first chunk.
     SUBNET=$(sipcalc -S $SUBNET_SIZE $new_ip6_prefix|grep Network|head -n 1|awk '{print $3}')
+    # Write new prefix into docker configuration.
     echo "${SUBNET}/${SUBNET_SIZE}" > $DOCKER_PREFIX_FILE
 
-    if [ "$old_ip6_prefix" != "$new_ip6_prefix" ]; then
-        service docker restart
+    # Restart docker to update new configuration
+    if [ "$old_ip6_prefix" != "$new_ip6_prefix" ]
+    then
+        if command -v systemctl &> /dev/null
+        then
+            systemctl restart docker.service
+        else
+            service docker restart
+        fi
     fi
 fi
