@@ -122,6 +122,15 @@ systemctl start dhclient6-pd
 systemctl status dhclient6-pd
 ```
 
+## AppArmor
+
+On systems with AppArmor (e.g. Ubuntu 20.04.3 LTS) you need to add a rule to allow the script to execute.
+
+```bash
+sed -i '/\/{,usr\/}sbin\/dhclient flags=(attach_disconnected) {/a \ \ /etc/dhcp/docker-ipv6                                  Uxr,' /etc/apparmor.d/sbin.dhclient
+systemctl restart apparmor.service
+```
+
 ## Docker IPv6 hook
 The `docker-ipv6` dhclient hook in this repository should be placed in
 `/etc/dhcp/` where it will be executed after dhclient obtains a prefix.
