@@ -6,7 +6,7 @@ After=network.target network-online.target
 [Service]
 Type=simple
 Environment=NETWORK_INTERFACE=eth0
-ExecStart=/sbin/dhclient -6 -P -d ${NETWORK_INTERFACE}
+ExecStart=/sbin/dhclient -6 -P -d -sf /etc/dhcp/docker-ipv6 ${NETWORK_INTERFACE}
 Restart=always
 RestartSec=10s
 
